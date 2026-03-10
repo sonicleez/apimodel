@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Clock, CheckCircle, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { AdminUsageTable } from '@/components/dashboard/AdminUsageTable'
+import { ResellerBalance } from '@/components/dashboard/ResellerBalance'
 
 export default async function AdminPage() {
   const t = await getTranslations()
@@ -71,6 +72,9 @@ export default async function AdminPage() {
     <div className="p-8">
       <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
       <p className="text-slate-400 mb-8">Quản lý hệ thống 2brain</p>
+
+      {/* Reseller Balance */}
+      <ResellerBalance />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
