@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { UsageData, EzaiTransaction } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { PlanBadge } from '@/components/ui/plan-badge'
 import { Wallet, Zap, TrendingUp, Calendar, Timer } from 'lucide-react'
 import { formatUSD, formatVND } from '@/lib/utils/currency'
 
@@ -40,23 +41,6 @@ function usageBarColor(pct: number) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-function PlanBadge({ plan }: { plan: string }) {
-  const map: Record<string, { label: string; className: string }> = {
-    starter:  { label: 'Starter',  className: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-    pro:      { label: 'Pro',      className: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    max:      { label: 'Max',      className: 'bg-orange-500/20 text-orange-300 border-orange-500/30' },
-    ultra:    { label: 'Ultra',    className: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-    one_time: { label: 'One-time', className: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
-    none:     { label: 'No Plan',  className: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
-  }
-  const cfg = map[plan] ?? map['none']
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.className}`}>
-      {cfg.label}
-    </span>
-  )
-}
 
 function ExpiryCountdown({ expiresAt }: { expiresAt: string | null }) {
   if (!expiresAt) return <span className="text-slate-500 text-sm">—</span>

@@ -1,42 +1,27 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { apiError, serverError } from '@/lib/api/response'
 
 // GET /api/admin/settings
 export async function GET() {
+  const auth = await requireAdmin()
+  if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status })
+
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const admin = createAdminClient()
-    const { data: adminProfile } = await admin.from('rb_users').select('role').eq('id', user.id).single()
-    if (adminProfile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { data } = await admin.from('rb_settings').select('*')
-    const settings: Record<string, string> = {}
-    data?.forEach(r => { settings[r.key] = r.value })
+    const { data } = await auth.admin.from('rb_settings').select('*')
+    const settings = Object.fromEntries((data ?? []).map(r => [r.key, r.value]))
     return NextResponse.json(settings)
-  } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  } catch (err) {
+    return serverError(err)
   }
 }
 
-// POST /api/admin/settings — upsert a setting key/value
+// POST /api/admin/settings — upsert key/value pairs
 export async function POST(request: Request) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status })
+
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const admin = createAdminClient()
-    const { data: adminProfile } = await admin.from('rb_users').select('role').eq('id', user.id).single()
-    if (adminProfile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const body = await request.json()
     const updates = Object.entries(body).map(([key, value]) => ({
       key,
@@ -44,14 +29,14 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     }))
 
-    const { error } = await admin
+    const { error } = await auth.admin
       .from('rb_settings')
       .upsert(updates, { onConflict: 'key' })
 
     if (error) throw error
 
-    await admin.from('rb_audit_logs').insert({
-      actor_id: user.id,
+    await auth.admin.from('rb_audit_logs').insert({
+      actor_id: auth.user.id,
       action: 'settings_updated',
       target_type: 'rb_settings',
       target_id: null,
@@ -59,11 +44,8 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (err: unknown) {
+  } catch (err) {
     console.error('Admin settings error:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Server error' },
-      { status: 500 }
-    )
+    return serverError(err)
   }
 }

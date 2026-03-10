@@ -1,73 +1,56 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { apiError, serverError } from '@/lib/api/response'
 import { ezai } from '@/lib/ezai/client'
-import { AdminUserStat } from '@/types'
+import { AdminUserStat, EzaiUser } from '@/types'
 
 export async function GET() {
+  const auth = await requireAdmin()
+  if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status })
+
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const admin = createAdminClient()
-    const { data: adminProfile } = await admin
-      .from('rb_users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    if (adminProfile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const [rbUsersResult, ezaiUsersResult, authUsersResult] = await Promise.allSettled([
-      admin
+    const [rbResult, ezaiResult, authResult] = await Promise.allSettled([
+      auth.admin
         .from('rb_users')
         .select('id, name, ezai_user_id')
         .not('ezai_user_id', 'is', null)
         .order('created_at', { ascending: false }),
       ezai.listUsers(1, 100),
-      admin.auth.admin.listUsers({ perPage: 1000 }),
+      auth.admin.auth.admin.listUsers({ perPage: 1000 }),
     ])
 
-    const rbUsers = rbUsersResult.status === 'fulfilled' ? (rbUsersResult.value.data ?? []) : []
-    const ezaiUsers = ezaiUsersResult.status === 'fulfilled' ? ezaiUsersResult.value.users : []
-    const authUsers = authUsersResult.status === 'fulfilled' ? (authUsersResult.value.data?.users ?? []) : []
+    const rbUsers = rbResult.status === 'fulfilled' ? (rbResult.value.data ?? []) : []
+    const ezaiUsers = ezaiResult.status === 'fulfilled' ? ezaiResult.value.users : []
+    const authUsers = authResult.status === 'fulfilled' ? (authResult.value.data?.users ?? []) : []
 
-    // Build email map from auth users
-    const emailMap: Record<string, string> = {}
-    authUsers.forEach((au) => {
-      if (au.id && au.email) emailMap[au.id] = au.email
-    })
+    const emailMap = Object.fromEntries(
+      authUsers.filter(u => u.id && u.email).map(u => [u.id, u.email!])
+    )
 
-    // Build EzAI data map by ezai_user_id
-    const ezaiMap: Record<string, typeof ezaiUsers[0]> = {}
-    ezaiUsers.forEach((eu) => {
-      ezaiMap[eu.id] = eu
-    })
+    const ezaiMap = Object.fromEntries(
+      ezaiUsers.map((u): [string, EzaiUser] => [u.id, u])
+    )
 
-    // Merge
-    const stats: AdminUserStat[] = rbUsers.map((rb) => {
-      const ezaiData = rb.ezai_user_id ? ezaiMap[rb.ezai_user_id] : null
-      return {
-        rb_user_id: rb.id,
-        name: rb.name,
-        email: emailMap[rb.id] ?? '',
-        ezai_user_id: rb.ezai_user_id,
-        balance: ezaiData?.balance ?? 0,
-        plan_type: ezaiData?.plan_type ?? 'none',
-        daily_limit: ezaiData?.daily_limit ?? 0,
-        daily_used: ezaiData?.daily_used ?? 0,
-        plan_expires_at: ezaiData?.plan_expires_at ?? null,
-      }
-    })
-
-    // Sort by daily_used desc
-    stats.sort((a, b) => b.daily_used - a.daily_used)
+    const stats: AdminUserStat[] = rbUsers
+      .map((rb) => {
+        const ezai = rb.ezai_user_id ? ezaiMap[rb.ezai_user_id] : null
+        return {
+          rb_user_id: rb.id,
+          name: rb.name,
+          email: emailMap[rb.id] ?? '',
+          ezai_user_id: rb.ezai_user_id,
+          balance: ezai?.balance ?? 0,
+          plan_type: ezai?.plan_type ?? 'none',
+          daily_limit: ezai?.daily_limit ?? 0,
+          daily_used: ezai?.daily_used ?? 0,
+          plan_expires_at: ezai?.plan_expires_at ?? null,
+        }
+      })
+      .sort((a, b) => b.daily_used - a.daily_used)
 
     return NextResponse.json({ stats, total: stats.length })
   } catch (err) {
     console.error('Admin stats error:', err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    return serverError(err)
   }
 }

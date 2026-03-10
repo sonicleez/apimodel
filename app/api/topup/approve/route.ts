@@ -1,50 +1,32 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { apiError, serverError } from '@/lib/api/response'
 import { ezai } from '@/lib/ezai/client'
 
 export async function POST(request: Request) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: auth.status })
+
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const admin = createAdminClient()
-
-    // Check admin role
-    const { data: adminProfile } = await admin.from('rb_users').select('role').eq('id', user.id).single()
-    if (adminProfile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const { topup_id, admin_note } = await request.json()
-    if (!topup_id) return NextResponse.json({ error: 'topup_id required' }, { status: 400 })
+    if (!topup_id) return apiError('topup_id required', 400)
 
-    // Get the topup request
-    const { data: topup, error: topupError } = await admin
+    const { data: topup, error: fetchErr } = await auth.admin
       .from('rb_topup_requests')
       .select('*')
       .eq('id', topup_id)
       .single()
 
-    if (topupError || !topup) {
-      return NextResponse.json({ error: 'Topup request not found' }, { status: 404 })
-    }
+    if (fetchErr || !topup) return apiError('Topup request not found', 404)
+    if (topup.status !== 'pending') return apiError(`Cannot approve a ${topup.status} request`, 400)
 
-    if (topup.status !== 'pending') {
-      return NextResponse.json({ error: `Cannot approve a ${topup.status} request` }, { status: 400 })
-    }
-
-    // Get user profile for EzAI user ID
-    const { data: userProfile } = await admin
+    const { data: userProfile } = await auth.admin
       .from('rb_users')
-      .select('ezai_user_id, ezai_api_key')
+      .select('ezai_user_id')
       .eq('id', topup.user_id)
       .single()
 
-    if (!userProfile?.ezai_user_id) {
-      return NextResponse.json({ error: 'User does not have an EzAI account' }, { status: 400 })
-    }
+    if (!userProfile?.ezai_user_id) return apiError('User does not have an EzAI account', 400)
 
     // Call EzAI depending on request type
     if (topup.type === 'plan' && topup.plan_name) {
@@ -53,24 +35,22 @@ export async function POST(request: Request) {
       await ezai.topupUser(userProfile.ezai_user_id, topup.usd_amount)
     }
 
-    // Update topup request status
-    const { data: updated, error: updateError } = await admin
+    const { data: updated, error: updateErr } = await auth.admin
       .from('rb_topup_requests')
       .update({
         status: 'approved',
         admin_note: admin_note || null,
-        approved_by: user.id,
+        approved_by: auth.user.id,
         approved_at: new Date().toISOString(),
       })
       .eq('id', topup_id)
       .select()
       .single()
 
-    if (updateError) throw updateError
+    if (updateErr) throw updateErr
 
-    // Log the action
-    await admin.from('rb_audit_logs').insert({
-      actor_id: user.id,
+    await auth.admin.from('rb_audit_logs').insert({
+      actor_id: auth.user.id,
       action: 'topup_approved',
       target_type: 'topup_request',
       target_id: topup_id,
@@ -83,11 +63,8 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(updated)
-  } catch (err: unknown) {
+  } catch (err) {
     console.error('Topup approve error:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Server error' },
-      { status: 500 }
-    )
+    return serverError(err)
   }
 }

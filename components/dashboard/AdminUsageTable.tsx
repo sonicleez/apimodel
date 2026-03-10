@@ -6,27 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PlanBadge } from '@/components/ui/plan-badge'
 import { RefreshCw, BarChart2 } from 'lucide-react'
 import { formatUSD } from '@/lib/utils/currency'
 import { cn } from '@/lib/utils'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-function PlanBadge({ plan }: { plan: string }) {
-  const map: Record<string, { label: string; className: string }> = {
-    starter: { label: 'Starter', className: 'bg-blue-500/20 text-blue-300' },
-    pro:     { label: 'Pro',     className: 'bg-purple-500/20 text-purple-300' },
-    max:     { label: 'Max',     className: 'bg-orange-500/20 text-orange-300' },
-    ultra:   { label: 'Ultra',   className: 'bg-pink-500/20 text-pink-300' },
-    none:    { label: 'No Plan', className: 'bg-slate-500/20 text-slate-400' },
-  }
-  const cfg = map[plan] ?? map['none']
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${cfg.className}`}>
-      {cfg.label}
-    </span>
-  )
-}
 
 function ExpiryCountdown({ expiresAt }: { expiresAt: string | null }) {
   if (!expiresAt) return <span className="text-slate-500 text-xs">—</span>

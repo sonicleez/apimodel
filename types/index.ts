@@ -1,4 +1,4 @@
-// Types for 2brain reseller app
+// Types for reseller platform
 
 export type UserRole = 'admin' | 'user'
 
