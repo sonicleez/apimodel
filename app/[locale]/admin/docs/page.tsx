@@ -5,8 +5,9 @@ import {
   Key, Globe, AlertTriangle, Zap, Terminal, ChevronRight, ShieldCheck
 } from 'lucide-react'
 import Link from 'next/link'
+import { resellerApiBase, aiBaseUrl } from '@/lib/config'
 
-const resellerBase = 'https://ezaiapi.com/reseller/api'
+const resellerBase = resellerApiBase
 
 const plans = [
   { name: 'starter', price: '$10/month', daily: '$35/day', rpm: 30,  concurrent: 5  },
@@ -127,8 +128,8 @@ export default function ResellerDocsPage() {
             <p className="text-sm text-slate-300">
               All Reseller API requests require your reseller key (starts with <code className="text-pink-300">rk-</code>).
               Find it in your reseller panel at{' '}
-              <Link href="https://ezaiapi.com/reseller" target="_blank" className="text-pink-400 hover:text-pink-300 underline underline-offset-2">
-                ezaiapi.com/reseller
+              <Link href={`${aiBaseUrl}/reseller`} target="_blank" className="text-pink-400 hover:text-pink-300 underline underline-offset-2">
+                {aiBaseUrl}/reseller
               </Link>.
             </p>
             <CodeBlock lang="Authorization header" code={`Authorization: Bearer rk-your_reseller_key_here\nContent-Type: application/json`} />
@@ -331,7 +332,7 @@ export default function ResellerDocsPage() {
             <CardTitle className="text-base text-white">Python</CardTitle>
           </CardHeader>
           <CardContent>
-            <CodeBlock lang="python" code={`import requests\n\nBASE = "https://ezaiapi.com/reseller/api"\nHEADERS = {\n    "Authorization": "Bearer rk-your_reseller_key",\n    "Content-Type": "application/json"\n}\n\n# 1. Create end-user\nuser = requests.post(f"{BASE}/users", json={\n    "email": "customer@example.com",\n    "name": "Jane Smith"\n}, headers=HEADERS).json()\nprint("API key:", user["api_key"])  # ek-xxxxxxxx\n\n# 2. Activate a plan\nrequests.post(f"{BASE}/users/{user['id']}/plan", json={\n    "plan": "pro"\n}, headers=HEADERS)\n\n# 3. Top up balance\nrequests.post(f"{BASE}/users/{user['id']}/topup", json={\n    "amount": 10.00\n}, headers=HEADERS)\n\n# 4. Get stats\nstats = requests.get(f"{BASE}/stats", headers=HEADERS).json()\nprint("Reseller balance:", stats["reseller_balance"])`} />
+            <CodeBlock lang="python" code={`import requests\n\nBASE = "${resellerApiBase}"\nHEADERS = {\n    "Authorization": "Bearer rk-your_reseller_key",\n    "Content-Type": "application/json"\n}\n\n# 1. Create end-user\nuser = requests.post(f"{BASE}/users", json={\n    "email": "customer@example.com",\n    "name": "Jane Smith"\n}, headers=HEADERS).json()\nprint("API key:", user["api_key"])  # ek-xxxxxxxx\n\n# 2. Activate a plan\nrequests.post(f"{BASE}/users/{user['id']}/plan", json={\n    "plan": "pro"\n}, headers=HEADERS)\n\n# 3. Top up balance\nrequests.post(f"{BASE}/users/{user['id']}/topup", json={\n    "amount": 10.00\n}, headers=HEADERS)\n\n# 4. Get stats\nstats = requests.get(f"{BASE}/stats", headers=HEADERS).json()\nprint("Reseller balance:", stats["reseller_balance"])`} />
           </CardContent>
         </Card>
 
@@ -340,20 +341,20 @@ export default function ResellerDocsPage() {
             <CardTitle className="text-base text-white">JavaScript / Node.js</CardTitle>
           </CardHeader>
           <CardContent>
-            <CodeBlock lang="javascript" code={`const BASE = 'https://ezaiapi.com/reseller/api'\nconst HEADERS = {\n  'Authorization': 'Bearer rk-your_reseller_key',\n  'Content-Type': 'application/json'\n}\n\n// 1. Create end-user\nconst user = await fetch(\`\${BASE}/users\`, {\n  method: 'POST',\n  headers: HEADERS,\n  body: JSON.stringify({ email: 'customer@example.com', name: 'Jane Smith' })\n}).then(r => r.json())\nconsole.log('API key:', user.api_key)\n\n// 2. Activate plan\nawait fetch(\`\${BASE}/users/\${user.id}/plan\`, {\n  method: 'POST', headers: HEADERS,\n  body: JSON.stringify({ plan: 'pro' })\n})\n\n// 3. Top up\nawait fetch(\`\${BASE}/users/\${user.id}/topup\`, {\n  method: 'POST', headers: HEADERS,\n  body: JSON.stringify({ amount: 10.00 })\n})\n\n// 4. Stats\nconst stats = await fetch(\`\${BASE}/stats\`, { headers: HEADERS }).then(r => r.json())\nconsole.log('Reseller balance:', stats.reseller_balance)`} />
+            <CodeBlock lang="javascript" code={`const BASE = '${resellerApiBase}'\nconst HEADERS = {\n  'Authorization': 'Bearer rk-your_reseller_key',\n  'Content-Type': 'application/json'\n}\n\n// 1. Create end-user\nconst user = await fetch(\`\${BASE}/users\`, {\n  method: 'POST',\n  headers: HEADERS,\n  body: JSON.stringify({ email: 'customer@example.com', name: 'Jane Smith' })\n}).then(r => r.json())\nconsole.log('API key:', user.api_key)\n\n// 2. Activate plan\nawait fetch(\`\${BASE}/users/\${user.id}/plan\`, {\n  method: 'POST', headers: HEADERS,\n  body: JSON.stringify({ plan: 'pro' })\n})\n\n// 3. Top up\nawait fetch(\`\${BASE}/users/\${user.id}/topup\`, {\n  method: 'POST', headers: HEADERS,\n  body: JSON.stringify({ amount: 10.00 })\n})\n\n// 4. Stats\nconst stats = await fetch(\`\${BASE}/stats\`, { headers: HEADERS }).then(r => r.json())\nconsole.log('Reseller balance:', stats.reseller_balance)`} />
           </CardContent>
         </Card>
       </Section>
 
       {/* Footer links */}
       <div className="flex flex-wrap gap-3 pt-4 border-t border-white/10">
-        <Link href="https://ezaiapi.com/reseller" target="_blank" rel="noopener noreferrer"
+        <Link href={`${aiBaseUrl}/reseller`} target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
           <Globe size={14} />
           EzAI Reseller Panel
           <ExternalLink size={12} />
         </Link>
-        <Link href="https://ezaiapi.com" target="_blank" rel="noopener noreferrer"
+        <Link href={aiBaseUrl} target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
           <BookOpen size={14} />
           EzAI Docs

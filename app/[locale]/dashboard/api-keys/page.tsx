@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Key } from 'lucide-react'
 import CopyButton from './CopyButton'
 import { ezai } from '@/lib/ezai/client'
+import { aiBaseUrl } from '@/lib/config'
 
 export default async function ApiKeysPage() {
   const t = await getTranslations()
@@ -16,9 +17,7 @@ export default async function ApiKeysPage() {
   const admin = createAdminClient()
   const { data: profile } = await admin.from('rb_users').select('*').eq('id', user.id).single()
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost')
-    ? 'https://ezaiapi.com'
-    : process.env.NEXT_PUBLIC_APP_URL || 'https://ezaiapi.com'
+  const baseUrl = aiBaseUrl
 
   // Try to get live key from EzAI; fall back to stored key
   let apiKey: string | null = profile?.ezai_api_key ?? null
@@ -41,7 +40,7 @@ export default async function ApiKeysPage() {
     }
   }
 
-  const apiKeyDisplay = process.env.EZAI_BASE_URL || 'https://ezaiapi.com'
+  const apiKeyDisplay = aiBaseUrl
 
   return (
     <div className="p-8 max-w-3xl">

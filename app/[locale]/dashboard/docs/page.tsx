@@ -7,8 +7,9 @@ import {
   Terminal, CheckCircle, Clock, ChevronRight, Cpu
 } from 'lucide-react'
 import Link from 'next/link'
+import { aiBaseUrl } from '@/lib/config'
 
-const aiBase = 'https://ezaiapi.com'
+const aiBase = aiBaseUrl
 
 const models = [
   // Claude
@@ -239,8 +240,8 @@ export default async function DocsPage() {
             </div>
             <div className="ml-8 space-y-3">
               <p className="text-xs text-slate-400">Sets <code className="text-purple-300">ANTHROPIC_BASE_URL</code>, <code className="text-purple-300">ANTHROPIC_API_KEY</code>, and configures <code className="text-slate-300">~/.claude/settings.json</code>.</p>
-              <CodeBlock lang="macOS / Linux" code={`curl -fsSL "https://ezaiapi.com/install.sh?key=${apiKey}" | sh`} />
-              <CodeBlock lang="Windows (PowerShell)" code={`irm "https://ezaiapi.com/install.ps1?key=${apiKey}" | iex`} />
+              <CodeBlock lang="macOS / Linux" code={`curl -fsSL "${aiBase}/install.sh?key=${apiKey}" | sh`} />
+              <CodeBlock lang="Windows (PowerShell)" code={`irm "${aiBase}/install.ps1?key=${apiKey}" | iex`} />
             </div>
           </div>
 
@@ -275,9 +276,9 @@ export default async function DocsPage() {
           </summary>
           <div className="mt-3 ml-5 space-y-3">
             <p className="text-xs text-slate-400">Add to <code className="text-purple-300">~/.bashrc</code>, <code className="text-purple-300">~/.zshrc</code>, or your shell config:</p>
-            <CodeBlock lang="bash" code={`export ANTHROPIC_BASE_URL="https://ezaiapi.com"\nexport ANTHROPIC_API_KEY="${apiKey}"`} />
+            <CodeBlock lang="bash" code={`export ANTHROPIC_BASE_URL="${aiBase}"\nexport ANTHROPIC_API_KEY="${apiKey}"`} />
             <p className="text-xs text-slate-400">Create or edit <code className="text-purple-300">~/.claude/settings.json</code>:</p>
-            <CodeBlock lang="json" code={`{\n  "env": {\n    "ANTHROPIC_BASE_URL": "https://ezaiapi.com",\n    "ANTHROPIC_API_KEY": "${apiKey}"\n  },\n  "disableLoginPrompt": true\n}`} />
+            <CodeBlock lang="json" code={`{\n  "env": {\n    "ANTHROPIC_BASE_URL": "${aiBase}",\n    "ANTHROPIC_API_KEY": "${apiKey}"\n  },\n  "disableLoginPrompt": true\n}`} />
           </div>
         </details>
 
@@ -299,7 +300,7 @@ export default async function DocsPage() {
           <CardContent className="p-5 space-y-3">
             <p className="text-sm text-slate-300">Include your API key in every request:</p>
             <CodeBlock lang="Request headers" code={`# Required headers\nx-api-key: ${apiKey}\ncontent-type: application/json\nanthropic-version: 2023-06-01`} />
-            <p className="text-xs text-slate-400">Base URL: <code className="text-purple-300">https://ezaiapi.com</code> — all requests go here.</p>
+            <p className="text-xs text-slate-400">Base URL: <code className="text-purple-300">{aiBase}</code> — all requests go here.</p>
           </CardContent>
         </Card>
       </Section>
@@ -318,7 +319,7 @@ export default async function DocsPage() {
               <p className="text-sm text-slate-400">Send a message to any model. The proxy auto-converts between formats — you always use the Anthropic Messages format.</p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <CodeBlock lang="curl" code={`curl https://ezaiapi.com/v1/messages \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "max_tokens": 1024,\n    "messages": [\n      { "role": "user", "content": "Hello, Claude!" }\n    ]\n  }'`} />
+              <CodeBlock lang="curl" code={`curl ${aiBase}/v1/messages \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "max_tokens": 1024,\n    "messages": [\n      { "role": "user", "content": "Hello, Claude!" }\n    ]\n  }'`} />
               <p className="text-xs text-slate-500">Response follows the standard Anthropic Messages API format for all models.</p>
             </CardContent>
           </Card>
@@ -333,7 +334,7 @@ export default async function DocsPage() {
               <p className="text-sm text-slate-400">Add <code className="text-purple-300">&quot;stream&quot;: true</code> to receive Server-Sent Events.</p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <CodeBlock lang="curl" code={`curl https://ezaiapi.com/v1/messages \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "max_tokens": 1024,\n    "stream": true,\n    "messages": [\n      { "role": "user", "content": "Write a haiku" }\n    ]\n  }'`} />
+              <CodeBlock lang="curl" code={`curl ${aiBase}/v1/messages \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "max_tokens": 1024,\n    "stream": true,\n    "messages": [\n      { "role": "user", "content": "Write a haiku" }\n    ]\n  }'`} />
               <p className="text-xs text-slate-500">SSE events: <code className="text-slate-400">message_start</code> → <code className="text-slate-400">content_block_delta</code> → <code className="text-slate-400">message_stop</code></p>
             </CardContent>
           </Card>
@@ -367,7 +368,7 @@ export default async function DocsPage() {
               <p className="text-sm text-slate-400">Count tokens without sending — no credits charged.</p>
             </CardHeader>
             <CardContent>
-              <CodeBlock lang="curl" code={`curl https://ezaiapi.com/v1/messages/count_tokens \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{ "model": "claude-sonnet-4-5", "messages": [{ "role": "user", "content": "Hello!" }] }'\n\n// → { "input_tokens": 12 }`} />
+              <CodeBlock lang="curl" code={`curl ${aiBase}/v1/messages/count_tokens \\\n  -H "x-api-key: ${apiKey}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "content-type: application/json" \\\n  -d '{ "model": "claude-sonnet-4-5", "messages": [{ "role": "user", "content": "Hello!" }] }'\n\n// → { "input_tokens": 12 }`} />
             </CardContent>
           </Card>
 
@@ -381,7 +382,7 @@ export default async function DocsPage() {
               <p className="text-sm text-slate-400">Native OpenAI Chat Completions format. Use with OpenAI SDK, LiteLLM, or any OpenAI-compatible tool.</p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <CodeBlock lang="curl" code={`curl https://ezaiapi.com/v1/chat/completions \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "messages": [\n      { "role": "system", "content": "You are helpful." },\n      { "role": "user", "content": "Hello!" }\n    ],\n    "max_tokens": 1024\n  }'`} />
+              <CodeBlock lang="curl" code={`curl ${aiBase}/v1/chat/completions \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "claude-sonnet-4-5",\n    "messages": [\n      { "role": "system", "content": "You are helpful." },\n      { "role": "user", "content": "Hello!" }\n    ],\n    "max_tokens": 1024\n  }'`} />
             </CardContent>
           </Card>
 
@@ -396,7 +397,7 @@ export default async function DocsPage() {
               <p className="text-sm text-slate-400">OpenAI Responses API format. Compatible with n8n, LangChain, and tools using the newer OpenAI SDK.</p>
             </CardHeader>
             <CardContent>
-              <CodeBlock lang="curl" code={`curl https://ezaiapi.com/v1/responses \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{ "model": "claude-sonnet-4-5", "input": "Hello!", "max_output_tokens": 1024 }'`} />
+              <CodeBlock lang="curl" code={`curl ${aiBase}/v1/responses \\\n  -H "Authorization: Bearer ${apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{ "model": "claude-sonnet-4-5", "input": "Hello!", "max_output_tokens": 1024 }'`} />
             </CardContent>
           </Card>
 
@@ -411,7 +412,7 @@ export default async function DocsPage() {
               <CardTitle className="text-base text-white">Anthropic SDK (Python)</CardTitle>
             </CardHeader>
             <CardContent>
-              <CodeBlock lang="python" code={`# pip install anthropic\nimport anthropic\n\nclient = anthropic.Anthropic(\n    api_key="${apiKey}",\n    base_url="https://ezaiapi.com"\n)\n\n# Claude\nmsg = client.messages.create(\n    model="claude-sonnet-4-5",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello!"}]\n)\nprint(msg.content[0].text)\n\n# GPT — same client, just change model\nmsg = client.messages.create(model="gpt-4.1", max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello GPT!"}])\n\n# Gemini\nmsg = client.messages.create(model="gemini-2.5-pro", max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello Gemini!"}])`} />
+              <CodeBlock lang="python" code={`# pip install anthropic\nimport anthropic\n\nclient = anthropic.Anthropic(\n    api_key="${apiKey}",\n    base_url="${aiBase}"\n)\n\n# Claude\nmsg = client.messages.create(\n    model="claude-sonnet-4-5",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello!"}]\n)\nprint(msg.content[0].text)\n\n# GPT — same client, just change model\nmsg = client.messages.create(model="gpt-4.1", max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello GPT!"}])\n\n# Gemini\nmsg = client.messages.create(model="gemini-2.5-pro", max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello Gemini!"}])`} />
             </CardContent>
           </Card>
 
@@ -420,7 +421,7 @@ export default async function DocsPage() {
               <CardTitle className="text-base text-white">Anthropic SDK (Node.js)</CardTitle>
             </CardHeader>
             <CardContent>
-              <CodeBlock lang="javascript" code={`// npm install @anthropic-ai/sdk\nimport Anthropic from '@anthropic-ai/sdk'\n\nconst client = new Anthropic({\n  apiKey: '${apiKey}',\n  baseURL: 'https://ezaiapi.com'\n})\n\nconst msg = await client.messages.create({\n  model: 'claude-sonnet-4-5',\n  max_tokens: 1024,\n  messages: [{ role: 'user', content: 'Hello!' }]\n})\nconsole.log(msg.content[0].text)`} />
+              <CodeBlock lang="javascript" code={`// npm install @anthropic-ai/sdk\nimport Anthropic from '@anthropic-ai/sdk'\n\nconst client = new Anthropic({\n  apiKey: '${apiKey}',\n  baseURL: '${aiBase}'\n})\n\nconst msg = await client.messages.create({\n  model: 'claude-sonnet-4-5',\n  max_tokens: 1024,\n  messages: [{ role: 'user', content: 'Hello!' }]\n})\nconsole.log(msg.content[0].text)`} />
             </CardContent>
           </Card>
 
@@ -433,7 +434,7 @@ export default async function DocsPage() {
               <p className="text-xs text-slate-400 mt-1">Cloudflare blocks the default <code className="text-slate-300">User-Agent: OpenAI/Python</code> header with a 403. Set a custom User-Agent.</p>
             </CardHeader>
             <CardContent>
-              <CodeBlock lang="python" code={`# pip install openai\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url="https://ezaiapi.com/v1",\n    api_key="${apiKey}",\n    default_headers={"User-Agent": "EzAI/1.0"}  # Required!\n)\n\nresponse = client.chat.completions.create(\n    model="claude-sonnet-4-5",\n    messages=[\n        {"role": "system", "content": "You are helpful."},\n        {"role": "user", "content": "Hello!"}\n    ],\n    max_tokens=1024\n)\nprint(response.choices[0].message.content)`} />
+              <CodeBlock lang="python" code={`# pip install openai\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url="${aiBase}/v1",\n    api_key="${apiKey}",\n    default_headers={"User-Agent": "EzAI/1.0"}  # Required!\n)\n\nresponse = client.chat.completions.create(\n    model="claude-sonnet-4-5",\n    messages=[\n        {"role": "system", "content": "You are helpful."},\n        {"role": "user", "content": "Hello!"}\n    ],\n    max_tokens=1024\n)\nprint(response.choices[0].message.content)`} />
             </CardContent>
           </Card>
         </div>
@@ -591,7 +592,7 @@ export default async function DocsPage() {
             {
               title: '403 Forbidden with OpenAI SDK',
               desc: 'Cloudflare WAF blocks the default User-Agent: OpenAI/Python header. Set a custom User-Agent:',
-              code: `client = OpenAI(\n    base_url="https://ezaiapi.com/v1",\n    api_key="${apiKey}",\n    default_headers={"User-Agent": "EzAI/1.0"}\n)`,
+              code: `client = OpenAI(\n    base_url="${aiBase}/v1",\n    api_key="${apiKey}",\n    default_headers={"User-Agent": "EzAI/1.0"}\n)`,
               lang: 'python'
             },
             {
@@ -607,7 +608,7 @@ export default async function DocsPage() {
             {
               title: 'Claude Code not using proxy',
               desc: 'Verify your environment variables are set:',
-              code: `echo $ANTHROPIC_BASE_URL   # Should show https://ezaiapi.com\necho $ANTHROPIC_API_KEY    # Should show your API key\ncat ~/.claude/settings.json # Should contain env block`,
+              code: `echo $ANTHROPIC_BASE_URL   # Should show ${aiBase}\necho $ANTHROPIC_API_KEY    # Should show your API key\ncat ~/.claude/settings.json # Should contain env block`,
               lang: 'bash'
             },
           ].map(({ title, desc, code, lang }) => (
@@ -691,7 +692,7 @@ export default async function DocsPage() {
           Anthropic Docs
           <ExternalLink size={12} />
         </Link>
-        <Link href="https://ezaiapi.com" target="_blank" rel="noopener noreferrer"
+        <Link href={aiBase} target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
           <Globe size={14} />
           EzAI Docs
