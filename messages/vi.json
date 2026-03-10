@@ -18,7 +18,7 @@
     "email": "Email",
     "password": "Mật khẩu",
     "name": "Họ tên",
-    "loginTitle": "Đăng nhập vào 2brain",
+    "loginTitle": "Đăng nhập vào {brandName}",
     "registerTitle": "Tạo tài khoản mới",
     "noAccount": "Chưa có tài khoản?",
     "hasAccount": "Đã có tài khoản?",

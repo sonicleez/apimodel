@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { brandName } from '@/lib/config'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,12 +41,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            2brain
+            {brandName}
           </span>
         </div>
         <Card className="border-white/10 bg-white/5 backdrop-blur text-white">
           <CardHeader>
-            <CardTitle className="text-2xl text-white">{t('auth.loginTitle')}</CardTitle>
+            <CardTitle className="text-2xl text-white">{t('auth.loginTitle', { brandName })}</CardTitle>
             <CardDescription className="text-slate-400">
               {t('auth.noAccount')}{' '}
               <Link href={`/${locale}/auth/register`} className="text-purple-400 hover:text-purple-300">

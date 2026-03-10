@@ -4,8 +4,10 @@ import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
+const brand = process.env.NEXT_PUBLIC_BRAND_NAME ?? '2brain'
+
 export const metadata: Metadata = {
-  title: '2brain — AI Credit Platform',
+  title: `${brand} — AI Credit Platform`,
   description: 'Buy AI credits with VietQR bank transfer',
 }
 

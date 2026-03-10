@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { brandName } from '@/lib/config'
 
 interface SidebarProps {
   user: RbUser
@@ -71,7 +72,7 @@ export default function Sidebar({ user, email }: SidebarProps) {
       <div className="p-6 border-b border-white/10">
         <Link href={`/${locale}/dashboard`} className="flex items-center gap-2">
           <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            2brain
+            {brandName}
           </span>
           {isAdmin && <Badge className="bg-purple-600 text-xs">Admin</Badge>}
         </Link>

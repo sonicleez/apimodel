@@ -94,6 +94,14 @@ export const ezai = {
     return ezaiFetch('/reseller/api/stats')
   },
 
+  // Top-up reseller account balance at the gateway (amount in USD)
+  async topupReseller(amount: number): Promise<{ success: boolean; new_balance?: number }> {
+    return ezaiFetch('/reseller/api/topup', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    })
+  },
+
   // Get usage logs, optionally filtered by user_id
   async getUsage(userId?: string, limit = 50): Promise<{ usage: EzaiUsageLog[] }> {
     const params = new URLSearchParams({ limit: String(limit) })

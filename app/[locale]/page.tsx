@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { brandName } from '@/lib/config'
 
 export default function LandingPage() {
   const t = useTranslations()
@@ -13,7 +14,7 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            2brain
+            {brandName}
           </span>
           <Badge variant="secondary" className="text-xs">Beta</Badge>
         </div>
@@ -96,7 +97,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 text-center text-slate-500">
-        <p>© 2026 2brain. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} {brandName}. All rights reserved.</p>
       </footer>
     </div>
   )

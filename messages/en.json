@@ -18,7 +18,7 @@
     "email": "Email",
     "password": "Password",
     "name": "Full Name",
-    "loginTitle": "Sign in to 2brain",
+    "loginTitle": "Sign in to {brandName}",
     "registerTitle": "Create new account",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
